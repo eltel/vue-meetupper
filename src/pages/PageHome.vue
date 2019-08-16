@@ -1,7 +1,7 @@
 <template>
   <div>
     <AppHero />
-    <div class="container">
+    <div v-if="pageLoader_isDataLoaded" class="container">
       <section class="section">
         <div class="m-b-lg">
           <h1 class="title is-inline">Featured Meetups in "Location"</h1>
@@ -9,7 +9,13 @@
           <button class="button is-primary is-pulled-right m-r-sm">
             Create Meetups
           </button>
-          <button class="button is-primary is-pulled-right m-r-sm">All</button>
+          <router-link
+            class="button is-primary is-pulled-right m-r-sm"
+            :to="{ name: 'PageMeetupFind' }"
+          >
+            All
+          </router-link>
+          <!-- <button class="button is-primary is-pulled-right m-r-sm">All</button> -->
         </div>
         <div class="row columns is-multiline">
           <!-- iterate over your meetups here-->
@@ -34,32 +40,39 @@
         </div>
       </section>
     </div>
+    <div class="container" v-else><AppSpinner /></div>
   </div>
 </template>
 
 <script>
-import axios from "axios";
-import MeetupItem from "@/components/MeetupItem";
 import CategoryItem from "@/components/CategoryItem";
+import MeetupItem from "@/components/MeetupItem";
+import { mapActions, mapState } from "vuex";
+import pageLoader from "@/mixins/pageLoader";
 export default {
   components: {
-    MeetupItem,
-    CategoryItem
+    CategoryItem,
+    MeetupItem
   },
-  data() {
-    return {
-      meetups: [],
-      categories: []
-    };
+  mixins: [pageLoader],
+  computed: {
+    ...mapState({
+      meetups: state => state.meetups.items,
+      categories: state => state.categories.items
+    })
   },
   created() {
-    axios.get("/api/v1/meetups").then(res => {
-      this.meetups = res.data;
-    });
-
-    axios.get("/api/v1/categories").then(res => {
-      this.categories = res.data;
-    });
+    Promise.all([this.fetchMeetups(), this.fetchCategories()]);
+    this.fetchCategories()
+      .then(() => this.pageLoader_resolveData())
+      .catch(err => {
+        console.error(err);
+        this.pageLoader_resolveData();
+      });
+  },
+  methods: {
+    ...mapActions("meetups", ["fetchMeetups"]),
+    ...mapActions("categories", ["fetchCategories"])
   }
 };
 </script>

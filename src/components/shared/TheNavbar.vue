@@ -17,15 +17,19 @@
       </a>
     </div>
 
-    <div id="navbarBasicExample" class="navbar-menu">
+    <div id="navbarBasicExample" class="navbar-menu is-active">
       <div class="navbar-start">
         <router-link :to="'/'" class="navbar-item">
           Home
         </router-link>
 
-        <a class="navbar-item">
+        <router-link :to="'/find'" class="navbar-item">
           Find
-        </a>
+        </router-link>
+
+        <!-- <a class="navbar-item">
+          Find
+        </a> -->
 
         <div class="navbar-item has-dropdown is-hoverable">
           <a class="navbar-link">
@@ -52,13 +56,33 @@
 
       <div class="navbar-end">
         <div class="navbar-item">
+          <div v-if="user">Welcome {{ user.name }}</div>
+        </div>
+        <div v-if="user" class="navbar-item has-dropdown is-hoverable">
+          <a class="navbar-link">
+            Account
+          </a>
+          <div class="navbar-dropdown">
+            <a href="#" class="navbar-item">
+              Profile
+            </a>
+            <hr class="navbar-divider" />
+            <a @click.prevent="logout" class="navbar-item">
+              Logout
+            </a>
+          </div>
+        </div>
+        <div v-else class="navbar-item has-dropdown ">
           <div class="buttons">
-            <a class="button is-primary">
+            <router-link
+              :to="{ name: 'PageRegister' }"
+              class="button is-primary"
+            >
               <strong>Sign up</strong>
-            </a>
-            <a class="button is-light">
+            </router-link>
+            <router-link :to="{ name: 'PageLogin' }" class="button is-light">
               Log in
-            </a>
+            </router-link>
           </div>
         </div>
       </div>
@@ -67,7 +91,19 @@
 </template>
 
 <script>
-export default {};
+import { mapGetters } from "vuex";
+export default {
+  computed: {
+    ...mapGetters({
+      user: "auth/authUser"
+    })
+  },
+  methods: {
+    logout() {
+      this.$store.dispatch("auth/logout");
+    }
+  }
+};
 </script>
 
 <style scoped></style>
