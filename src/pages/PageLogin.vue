@@ -110,7 +110,13 @@ export default {
       this.$store
         .dispatch("auth/loginWithEmailAndPassword", this.form)
         .then(() => this.$router.push("/"))
-        .catch(err => console.log(err));
+        .catch(errorMessage => {
+          this.$toasted.error(errorMessage, {
+            position: "bottom-center",
+            fullWidth: true,
+            duration: 3500
+          });
+        });
     }
   }
 };

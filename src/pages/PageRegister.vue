@@ -192,10 +192,10 @@ export default {
   validations: {
     form: {
       username: {
-        required
+        //  required
       },
       name: {
-        required
+        //  required
       },
       email: {
         required,
@@ -226,7 +226,13 @@ export default {
       this.$store
         .dispatch("auth/registerUser", this.form)
         .then(() => this.$router.push("/login"))
-        .catch(err => console.log(err));
+        .catch(errorMessage => {
+          this.$toasted.error(errorMessage, {
+            position: "bottom-center",
+            fullWidth: true,
+            duration: 3500
+          });
+        });
     }
   }
 };

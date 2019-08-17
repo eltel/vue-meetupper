@@ -2,6 +2,8 @@ import axios from "axios";
 import jwt from "jsonwebtoken";
 import axiosInstance from "@/services/axios";
 
+import { throwError } from "@/helpers";
+
 function checkTokenValidity(token) {
   if (token) {
     const decodedToken = jwt.decode(token);
@@ -27,25 +29,36 @@ export default {
   },
   actions: {
     loginWithEmailAndPassword({ commit }, userData) {
-      return axios.post("/api/v1/users/login", userData).then(res => {
-        const user = res.data;
-        localStorage.setItem("vue-meetup-jwt", user.token);
-        commit("setAuthUser", user);
-      });
+      return axios
+        .post("/api/v1/users/login", userData)
+        .then(res => {
+          const user = res.data;
+          localStorage.setItem("vue-meetup-jwt", user.token);
+          commit("setAuthUser", user);
+        })
+        .catch(err => throwError(err));
     },
     registerUser(context, userData) {
-      return axios.post("/api/v1/users/register", userData);
+      return axios
+        .post("/api/v1/users/register", userData)
+        .catch(err => throwError(err));
     },
     logout({ commit }) {
-      return axios
-        .post("/api/v1/users/logout")
-        .then(() => {
-          commit("setAuthUser", null);
-          return true;
-        })
-        .catch(err => {
-          return err;
-        });
+      // below is for sessions implementation only!!
+      // return axios
+      //   .post("/api/v1/users/logout")
+      //   .then(() => {
+      //     commit("setAuthUser", null);
+      //     return true;
+      //   })
+      //   .catch(err => {
+      //     return err;
+      //   });
+      return new Promise(resolve => {
+        localStorage.removeItem("vue-meetup-jwt");
+        commit("setAuthUser", null);
+        resolve(true);
+      });
     },
     getAuthUser({ commit, getters }) {
       const authUser = getters["authUser"];
