@@ -17,7 +17,7 @@
       </a>
     </div>
 
-    <div id="navbarBasicExample" class="navbar-menu is-active">
+    <div id="navbarBasicExample" class="navbar-menu">
       <div class="navbar-start">
         <router-link :to="'/'" class="navbar-item">
           Home
