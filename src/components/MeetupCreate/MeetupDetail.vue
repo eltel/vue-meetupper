@@ -31,23 +31,31 @@
     </div>
     <div class="field">
       <label class="title m-b-sm">From</label>
-      <input
+      <vue-timepicker
+        :minute-interval="10"
+        @change="changeTime($event, 'timeFrom')"
+      ></vue-timepicker>
+      <!-- <input
         v-model="form.timeFrom"
         @blur="$v.form.timeFrom.$touch()"
         class="input"
         type="text"
         placeholder="Time From"
-      />
+      /> -->
     </div>
     <div class="field">
       <label class="title m-b-sm">To</label>
-      <input
+      <vue-timepicker
+        :minute-interval="10"
+        @change="changeTime($event, 'timeTo')"
+      ></vue-timepicker>
+      <!-- <input
         v-model="form.timeTo"
         @blur="$v.form.timeTo.$touch()"
         class="input"
         type="text"
         placeholder="Time to"
-      />
+      /> -->
     </div>
     <div class="field">
       <label class="title m-b-sm">Please Choose the Category.</label>
@@ -75,11 +83,13 @@
 
 <script>
 import Datepicker from "vuejs-datepicker";
+import VueTimepicker from "vue2-timepicker";
 import moment from "moment";
 import { required } from "vuelidate/lib/validators";
 export default {
   components: {
-    Datepicker
+    Datepicker,
+    VueTimepicker
   },
   data() {
     return {
@@ -122,6 +132,12 @@ export default {
     },
     setDate(date) {
       this.form.startDate = moment(date).format();
+      this.emitFormData();
+    },
+    changeTime({ data }, field) {
+      const minutes = data.mm || "00";
+      const hours = data.HH || "00";
+      this.form[field] = hours + ":" + minutes;
       this.emitFormData();
     }
   }
