@@ -70,7 +70,7 @@
                 Threads
               </p>
               <ul>
-                <li v-for="thread in threads" :key="thread._id">
+                <li v-for="thread in orderedThreads" :key="thread._id">
                   {{ thread.title }}
                 </li>
               </ul>
@@ -113,58 +113,14 @@
               >
                 You need authenticate in order to join
               </button>
+              <ThreadCreateModal
+                v-if="isMember || isMeetupOwner"
+                @threadSubmitted="createThread"
+                :btnTitle="`Welcome ${authUser.username}, start a new thread`"
+                :title="'Create Thread'"
+              />
             </div>
-            <!-- Thread List START -->
-            <div class="content is-medium">
-              <h3 class="title is-3">Threads</h3>
-              <div v-for="thread in threads" :key="thread._id" class="box">
-                <!-- Thread title -->
-                <h4 id="const" class="title is-3">{{ thread.title }}</h4>
-                <!-- Create new post, handle later -->
-                <form class="post-create">
-                  <div class="field">
-                    <textarea
-                      class="textarea textarea-post"
-                      placeholder="Write a post"
-                      rows="1"
-                    ></textarea>
-                    <button :disabled="true" class="button is-primary m-t-sm">
-                      Send
-                    </button>
-                  </div>
-                </form>
-                <!-- Create new post END, handle later -->
-                <!-- Posts START -->
-                <article
-                  v-for="post in thread.posts"
-                  :key="post._id"
-                  class="media post-item"
-                >
-                  <figure class="media-left is-rounded user-image">
-                    <p class="image is-32x32">
-                      <img class="is-rounded" :src="post.user.avatar" />
-                    </p>
-                  </figure>
-                  <div class="media-content">
-                    <div class="content is-medium">
-                      <div class="post-content">
-                        <!-- Post User Name -->
-                        <strong class="author">{{ post.user.name }}</strong>
-                        {{ " " }}
-                        <!-- Post Updated at -->
-                        <small class="post-time">{{
-                          post.updatedAt | formatDate("LLL")
-                        }}</small>
-                        <br />
-                        <p class="post-content-message">{{ post.text }}</p>
-                      </div>
-                    </div>
-                  </div>
-                </article>
-                <!-- Posts END -->
-              </div>
-            </div>
-            <!-- Thread List END -->
+            <ThreadList :threads="orderedThreads" :canMakePost="canMakePost" />
           </div>
         </div>
       </div>
@@ -174,11 +130,18 @@
 
 <script>
 import { mapActions, mapState } from "vuex";
+import ThreadCreateModal from "@/components/ThreadCreateModal";
+import ThreadList from "@/components/ThreadList";
 export default {
+  components: {
+    ThreadCreateModal,
+    ThreadList
+  },
   computed: {
     ...mapState({
       meetup: state => state.meetups.item,
-      threads: state => state.threads.items
+      threads: state => state.threads.items,
+      authUser: state => state.auth.user
     }),
     meetupCreator() {
       return this.meetup.meetupCreator || {};
@@ -194,21 +157,46 @@ export default {
     },
     canJoin() {
       return !this.isMeetupOwner && this.isAuthenticated && !this.isMember;
+    },
+    canMakePost() {
+      return this.isAuthenticated && (this.isMember || this.isMeetupOwner);
+    },
+    orderedThreads() {
+      const copyOfThreads = [...this.threads];
+      return copyOfThreads.sort((thread, nextThread) => {
+        return new Date(nextThread.createdAt) - new Date(thread.createdAt);
+      });
     }
   },
   created() {
     const meetupId = this.$route.params.id;
     this.fetchMeetupById(meetupId);
     this.fetchThreads(meetupId);
+    if (this.isAuthenticated) {
+      this.$socket.emit("meetup/subscribe", meetupId);
+      this.$socket.on("meetup/postPublished", post =>
+        this.addPostToThread({ post, threadId: post.thread })
+      );
+    }
+  },
+  destroyed() {
+    this.$socket.removeListener("meetup/postPublished", this.addPostToThread);
+    this.$socket.emit("meetup/unsubscribe");
   },
   methods: {
     ...mapActions("meetups", ["fetchMeetupById"]),
-    ...mapActions("threads", ["fetchThreads"]),
+    ...mapActions("threads", ["fetchThreads", "postThread", "addPostToThread"]),
     joinMeetup() {
       this.$store.dispatch("meetups/joinMeetup", this.meetup._id);
     },
     leaveMeetup() {
       this.$store.dispatch("meetups/leaveMeetup", this.meetup._id);
+    },
+    createThread({ title, done }) {
+      this.postThread({ title, meetupId: this.meetup._id }).then(() => {
+        this.$toasted.success("Thread sucesfully created", { duration: 3000 });
+        done();
+      });
     }
   }
 };
@@ -322,56 +310,6 @@ li {
 }
 
 // Post Create Input START
-.textarea-post {
-  padding-bottom: 30px;
-}
 
-.post-create {
-  margin-bottom: 15px;
-}
 // Post Create END
-
-// Thread List START
-.content {
-  figure {
-    margin-bottom: 0;
-  }
-}
-
-.media-content-threads {
-  background-color: #f1f1f1;
-  padding: 3px 20px;
-  border-radius: 10px;
-  margin-right: 40px;
-  width: 100px;
-}
-
-.media-left.user-image {
-  margin: 0;
-  margin-right: 15px;
-}
-
-.post-item {
-}
-
-.media + .media {
-  border: none;
-  margin-top: 0;
-}
-
-.post-content {
-  margin: 0;
-  &-message {
-    font-size: 16px;
-  }
-
-  .author {
-    font-size: 18px;
-  }
-
-  .post-time {
-    font-size: 16px;
-  }
-}
-// Thread List END
 </style>

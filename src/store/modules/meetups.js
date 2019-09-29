@@ -71,7 +71,7 @@ export default {
     }
   },
   mutations: {
-    addUsersToMeetup(state, joinedPeople) {
+    addUserToMeetup(state, joinedPeople) {
       Vue.set(state.item, "joinedPeople", joinedPeople);
     }
   }

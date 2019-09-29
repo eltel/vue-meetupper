@@ -10,6 +10,10 @@ import AppDropdown from "./components/shared/AppDropdown";
 import AppHero from "./components/shared/AppHero";
 import AppSpinner from "./components/shared/AppSpinner";
 
+import AppSocket from "./plugins/socket";
+
+// import customPlugin from "@/plugins/customPlugin";
+
 Vue.config.productionTip = false;
 
 Vue.component("AppHero", AppHero);
@@ -17,8 +21,8 @@ Vue.component("AppDropdown", AppDropdown);
 Vue.component("AppSpinner", AppSpinner);
 
 Vue.use(vuelidate);
-
 Vue.use(Toasted);
+Vue.use(AppSocket, { connection: "http://localhost:3001" });
 
 Vue.filter("capitalize", function(value) {
   if (value && typeof value === "string") {
@@ -38,5 +42,6 @@ new Vue({
   router,
   store,
   vuelidate,
+
   render: h => h(App)
 }).$mount("#app");

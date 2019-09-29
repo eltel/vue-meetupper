@@ -4,7 +4,9 @@
     <div v-if="pageLoader_isDataLoaded" class="container">
       <section class="section">
         <div class="m-b-lg">
-          <h1 class="title is-inline">Featured Meetups in "Location"</h1>
+          <h1 class="title is-inline">
+            Featured Meetups in "Location"
+          </h1>
           <AppDropdown />
           <router-link
             v-if="user"
@@ -53,6 +55,7 @@ import CategoryItem from "@/components/CategoryItem";
 import MeetupItem from "@/components/MeetupItem";
 import { mapActions, mapState, mapGetters } from "vuex";
 import pageLoader from "@/mixins/pageLoader";
+
 export default {
   components: {
     CategoryItem,
@@ -69,6 +72,11 @@ export default {
     })
   },
   created() {
+    // Vue.myGlobalMethod();
+    // console.log(Vue.myCustomProperty);
+    // this.scream();
+    // this.$customMethod();
+
     Promise.all([this.fetchMeetups(), this.fetchCategories()]);
     this.fetchCategories()
       .then(() => this.pageLoader_resolveData())
