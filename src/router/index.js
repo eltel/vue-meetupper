@@ -9,6 +9,7 @@ import PageMeetupCreate from "@/pages/PageMeetupCreate";
 import PageNotFound from "@/pages/PageNotFound";
 import PageRegister from "@/pages/PageRegister";
 import PageLogin from "@/pages/PageLogin";
+import PageProfile from "@/pages/PageProfile";
 import PageSecret from "@/pages/PageSecret";
 import PageNotAuthenticated from "@/pages/PageNotAuthenticated";
 
@@ -54,6 +55,12 @@ const router = new Router({
       name: "PageLogin",
       component: PageLogin,
       meta: { onlyGuestUser: true }
+    },
+    {
+      path: "/me",
+      name: "PageProfile",
+      component: PageProfile,
+      meta: { onlyAuthUser: true }
     },
     {
       path: "/401",
