@@ -6,6 +6,7 @@ import threads from "./modules/threads";
 import stats from "./modules/stats";
 import categories from "./modules/categories";
 import auth from "./modules/auth";
+import meta from "./modules/meta";
 
 Vue.use(Vuex);
 
@@ -15,7 +16,8 @@ export default new Vuex.Store({
     categories,
     threads,
     auth,
-    stats
+    stats,
+    meta
   },
   // Mutations = simple functions to mutate state
   mutations: {

@@ -1,6 +1,7 @@
 import Vue from "vue";
 import axios from "axios";
 import axiosInstance from "@/services/axios";
+import { applyFilters } from "@/helpers";
 
 export default {
   namespaced: true,
@@ -9,10 +10,11 @@ export default {
     item: {}
   },
   actions: {
-    fetchMeetups({ state, commit }) {
+    fetchMeetups({ state, commit }, options = {}) {
       // extra commit to reset state before fetching data
       commit("setItem", { resource: "meetups", items: [] }, { root: true });
-      return axios.get("/api/v1/meetups").then(res => {
+      const url = applyFilters("/api/v1/meetups", options.filter);
+      return axios.get(url).then(res => {
         const meetups = res.data;
         commit(
           "setItems",
@@ -68,11 +70,27 @@ export default {
           joinedPeople.splice(index, 1);
           commit("addUsersToMeetup", joinedPeople);
         });
+    },
+    updateMeetup({ commit, state }, meetupData) {
+      meetupData.processedLocation = meetupData.location
+        .toLowerCase()
+        .replace(/[\s,]+/g, "")
+        .trim();
+      return axiosInstance
+        .patch(`/api/v1/meetups/${meetupData._id}`, meetupData)
+        .then(res => {
+          const updatedMeetup = res.data;
+          commit("mergeMeetup", updatedMeetup);
+          return state.item;
+        });
     }
   },
   mutations: {
     addUserToMeetup(state, joinedPeople) {
       Vue.set(state.item, "joinedPeople", joinedPeople);
+    },
+    mergeMeetup(state, updatedMeetup) {
+      state.item = { ...state.item, ...updatedMeetup };
     }
   }
 };

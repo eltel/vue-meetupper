@@ -6,18 +6,31 @@ exports.getSecret = function(req, res) {
 };
 
 exports.getMeetups = function(req, res) {
-  Meetup.find({})
+  const { category, location } = req.query;
+
+  const findQuery = location
+    ? Meetup.find({ processedLocation: { $regex: ".*" + location + ".*" } })
+    : Meetup.find({});
+  findQuery
     .populate("category")
     .populate("joinedPeople")
+    .limit(5)
+    .sort({ createdAt: -1 })
     .exec((errors, meetups) => {
       if (errors) {
         return res.status(422).send({ errors });
       }
 
+      // WARNING: requires improvement, can decrease performance
+      if (category) {
+        meetups = meetups.filter(meetup => {
+          return meetup.category.name === category;
+        });
+      }
+
       return res.json(meetups);
     });
 };
-
 exports.getMeetupById = function(req, res) {
   const { id } = req.params;
 
@@ -88,4 +101,27 @@ exports.leaveMeetup = function(req, res) {
   ])
     .then(() => res.json({ id }))
     .catch(errors => res.status(422).send({ errors }));
+};
+
+exports.updateMeetup = function(req, res) {
+  const meetupData = req.body;
+  const { id } = req.params;
+  const user = req.user;
+
+  meetupData.updatedAt = new Date();
+
+  if (user.id === meetupData.meetupCreator._id) {
+    Meetup.findByIdAndUpdate(id, { $set: meetupData }, { new: true })
+      .populate("meetupCreator", "name id avatar")
+      .populate("category")
+      .exec((errors, updatedMeetup) => {
+        if (errors) {
+          return res.status(422).send({ errors });
+        }
+
+        return res.json(updatedMeetup);
+      });
+  } else {
+    return res.status(401).send({ errors: { message: "Not Authorized!" } });
+  }
 };

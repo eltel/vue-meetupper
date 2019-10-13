@@ -6,6 +6,7 @@ import PageHome from "@/pages/PageHome";
 import PageMeetupDetail from "@/pages/PageMeetupDetail";
 import PageMeetupFind from "@/pages/PageMeetupFind";
 import PageMeetupCreate from "@/pages/PageMeetupCreate";
+import PageMeetupEdit from "@/pages/PageMeetupEdit";
 import PageNotFound from "@/pages/PageNotFound";
 import PageRegister from "@/pages/PageRegister";
 import PageLogin from "@/pages/PageLogin";
@@ -23,6 +24,12 @@ const router = new Router({
       component: PageHome
     },
     {
+      path: "/find/:category",
+      name: "PageMeetupFindCategory",
+      component: PageMeetupFind,
+      props: true
+    },
+    {
       path: "/find",
       name: "PageMeetupFind",
       component: PageMeetupFind
@@ -32,6 +39,13 @@ const router = new Router({
       name: "PageMeetupCreate",
       component: PageMeetupCreate,
       meta: { onlyAuthUser: true }
+    },
+    {
+      path: "/meetups/:meetupId/edit",
+      name: "PageMeetupEdit",
+      component: PageMeetupEdit,
+      meta: { onlyAuthUser: true },
+      props: true
     },
     {
       path: "/meetups/secret",
