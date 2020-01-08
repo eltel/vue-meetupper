@@ -29,6 +29,7 @@
     "mongoose": "^5.4.7",
     "morgan": "^1.9.1",
     "node-geocoder": "^3.22.0",
+    "nodemailer": "^6.3.1",
     "passport": "^0.4.0",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
@@ -42,6 +43,7 @@
     "vue-toasted": "^1.1.26",
     "vue2-timepicker": "^0.1.4",
     "vuejs-datepicker": "1.5.4",
+    "vuejs-paginate": "^2.1.0",
     "vuelidate": "^0.7.4",
     "vuex": "^3.1.0"
   },

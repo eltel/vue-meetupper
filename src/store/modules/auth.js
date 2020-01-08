@@ -55,17 +55,10 @@ export default {
         .post("/api/v1/users/register", userData)
         .catch(err => throwError(err));
     },
+    activateUser(_, hash) {
+      return axios.patch(`/api/v1/users/${hash}/activate`);
+    },
     logout({ commit }) {
-      // below is for sessions implementation only!!
-      // return axios
-      //   .post("/api/v1/users/logout")
-      //   .then(() => {
-      //     commit("setAuthUser", null);
-      //     return true;
-      //   })
-      //   .catch(err => {
-      //     return err;
-      //   });
       return new Promise(resolve => {
         localStorage.removeItem("vue-meetup-jwt");
         commit("setAuthUser", null);

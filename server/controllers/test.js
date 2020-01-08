@@ -10,7 +10,7 @@ const config = require("../config");
 
 function sendConfirmationEmail({ toUser, hash }, callback) {
   const transporter = nodemailer.createTransport({
-    service: "Gmail",
+    service: "gmail",
     auth: {
       user: config.GOOGLE_USER,
       pass: config.GOOGLE_PASSWORD
@@ -19,16 +19,18 @@ function sendConfirmationEmail({ toUser, hash }, callback) {
 
   const message = {
     from: config.GOOGLE_USER,
-    // to: toUser.email  // in production uncomment this inline
-    to: config.GOOGLE_USER, // Dev uncomment this inline
-    subject: "Vue meetup - activation",
-    html: `<h3> Hello ${toUser.name} </h3>
+    // to: toUser.email // in production uncomment this
+    to: config.GOOGLE_USER,
+    subject: "Vue Meetuper - Activate Account",
+    html: `
+      <h3> Hello ${toUser.name} </h3>
       <p>Thank you for registering into Vue Meetuper. Much Appreciated! Just one last step is laying ahead of you...</p>
       <p>To activate your account please follow this link: <a target="_" href="${
         config.DOMAIN
       }/users/${hash}/activate">${config.DOMAIN}/activate </a></p>
       <p>Cheers</p>
-      <p>Your Vue Meetuper Team</p>`
+      <p>Your Vue Meetuper Team</p>
+    `
   };
 
   transporter.sendMail(message, function(err, info) {
@@ -40,32 +42,6 @@ function sendConfirmationEmail({ toUser, hash }, callback) {
   });
 }
 
-exports.activateUser = function(req, res) {
-  const { hash } = req.params;
-
-  ConfirmationHash.findById(hash)
-    .populate("user")
-    .exec((errors, foundHash) => {
-      if (errors) {
-        return res.status(422).send({ errors });
-      }
-
-      User.findByIdAndUpdate(
-        foundHash.user.id,
-        { $set: { active: true } },
-        { new: true },
-        (errors, updatedUser) => {
-          if (errors) {
-            return res.status(422).send({ errors });
-          }
-          foundHash.remove(() => {});
-
-          return res.json(updatedUser);
-        }
-      );
-    });
-};
-
 exports.getUsers = function(req, res) {
   User.find({}).exec((errors, users) => {
     if (errors) {
@@ -76,15 +52,15 @@ exports.getUsers = function(req, res) {
   });
 };
 
-exports.getCurrentUser = function(req, res) {
+exports.getCurrentUser = function(req, res, next) {
   const user = req.user;
 
   if (!user) {
     return res.sendStatus(422);
   }
-  // For session auth only!!
-  // return res.json(user);
 
+  // For Session Auth!
+  // return res.json(user);
   return res.json(user.toAuthJSON());
 };
 
@@ -104,7 +80,7 @@ exports.register = function(req, res) {
     return res.status(422).json({
       errors: {
         password: "is required",
-        message: "password is required"
+        message: "Password is required"
       }
     });
   }
@@ -112,8 +88,8 @@ exports.register = function(req, res) {
   if (registerData.password !== registerData.passwordConfirmation) {
     return res.status(422).json({
       errors: {
-        password: "must match",
-        message: "passwords must match"
+        password: "is not the same as confirmation password",
+        message: "Password is not the same as confirmation password"
       }
     });
   }
@@ -124,18 +100,20 @@ exports.register = function(req, res) {
     if (errors) {
       return res.status(422).json({ errors });
     }
-
     const hash = new ConfirmationHash({ user: savedUser });
+
     hash.save((errors, createdHash) => {
       if (errors) {
         return res.status(422).json({ errors });
       }
+
       sendConfirmationEmail(
         { toUser: savedUser, hash: hash.id },
         (errors, info) => {
           if (errors) {
             return res.status(422).json({ errors });
           }
+
           return res.json(savedUser);
         }
       );
@@ -159,7 +137,7 @@ exports.login = function(req, res, next) {
     return res.status(422).json({
       errors: {
         password: "is required",
-        message: "password is required"
+        message: "Password is required"
       }
     });
   }
@@ -175,14 +153,14 @@ exports.login = function(req, res, next) {
       } else {
         return res.status(422).send({
           errors: {
-            message: "Please check your email to activate account"
+            message: "Please check your email in order to activate account"
           }
         });
       }
     } else {
       return res.status(422).send({
         errors: {
-          message: "Invalid Password or Email"
+          message: "Invalid password or email"
         }
       });
     }
@@ -191,7 +169,7 @@ exports.login = function(req, res, next) {
 
 exports.logout = function(req, res) {
   req.logout();
-  return res.json({ status: "Session destroyed" });
+  return res.json({ status: "Session destroyed!" });
 };
 
 // @facet
@@ -300,6 +278,7 @@ exports.getUserActivity = function(req, res) {
     fetchPostByUserQuery(userId)
   ])
     // Writing [] to get data from the array
+
     .then(([meetups, threads, posts]) => res.json({ meetups, threads, posts }))
     .catch(err => {
       console.log(err);
@@ -320,6 +299,7 @@ exports.updateUser = (req, res) => {
       { new: true },
       (errors, updatedUser) => {
         if (errors) return res.status(422).send({ errors });
+
         return res.json(updatedUser);
       }
     );

@@ -7,20 +7,31 @@ export default {
   namespaced: true,
   state: {
     items: [],
-    item: {}
+    item: {},
+    pagination: {
+      count: 0,
+      pageCount: 0,
+      pageSize: 6,
+      pageNum: 1
+    }
   },
   actions: {
     fetchMeetups({ state, commit }, options = {}) {
-      // extra commit to reset state before fetching data
-      commit("setItem", { resource: "meetups", items: [] }, { root: true });
+      if (options.reset) {
+        // extra commit to reset state before fetching data
+        commit("setItems", { resource: "meetups", items: [] }, { root: true });
+      }
+
       const url = applyFilters("/api/v1/meetups", options.filter);
       return axios.get(url).then(res => {
-        const meetups = res.data;
+        const { meetups, count, pageCount } = res.data;
         commit(
           "setItems",
           { resource: "meetups", items: meetups },
           { root: true }
         );
+        commit("setPagination", { count, pageCount });
+
         return state.items;
       });
     },
@@ -83,6 +94,16 @@ export default {
           commit("mergeMeetup", updatedMeetup);
           return state.item;
         });
+    },
+    deleteMeetup(_, meetupId) {
+      return axiosInstance.delete(`/api/v1/meetups/${meetupId}`).then(res => {
+        const meetupId = res.data;
+        return meetupId;
+      });
+    },
+    initializePagesFromQuery({ commit }, { pageSize, pageNum }) {
+      commit("setPage", pageNum);
+      commit("setPageSize", pageSize);
     }
   },
   mutations: {
@@ -91,6 +112,16 @@ export default {
     },
     mergeMeetup(state, updatedMeetup) {
       state.item = { ...state.item, ...updatedMeetup };
+    },
+    setPagination(state, { count, pageCount }) {
+      Vue.set(state.pagination, "count", count);
+      Vue.set(state.pagination, "pageCount", pageCount);
+    },
+    setPage(state, page) {
+      Vue.set(state.pagination, "pageNum", page);
+    },
+    setPageSize(state, pageSize) {
+      Vue.set(state.pagination, "pageSize", pageSize);
     }
   }
 };

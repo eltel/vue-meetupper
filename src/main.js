@@ -2,6 +2,7 @@ import Vue from "vue";
 
 import vuelidate from "vuelidate";
 import Toasted from "vue-toasted";
+import Paginate from "vuejs-paginate";
 
 import App from "./App.vue";
 import router from "./router";
@@ -20,6 +21,7 @@ Vue.config.productionTip = false;
 Vue.component("AppHero", AppHero);
 Vue.component("AppDropdown", AppDropdown);
 Vue.component("AppSpinner", AppSpinner);
+Vue.component("paginate", Paginate);
 
 Vue.use(vuelidate);
 Vue.use(Toasted);
